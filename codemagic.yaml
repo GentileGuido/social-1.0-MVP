@@ -4,10 +4,7 @@ workflows:
     environment:
       vars:
         EXPO_DEBUG: 'true'
-      flutter: null
-      xcode: null
       node: 20.9.0
-      yarn: false
     scripts:
       - name: Install dependencies
         script: npm install
