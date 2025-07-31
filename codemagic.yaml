@@ -1,28 +1,22 @@
 workflows:
-  android-release:
-    name: Build Android Release (Expo)
+  debug-apk:
+    name: Build APK (Debug)
     environment:
-      node: "18"           # usa Node.js 18
-      flutter: none        # no hace falta Flutter nativo
+      vars:
+        EXPO_DEBUG: 'true'
+      flutter: null
+      xcode: null
+      node: 20.9.0
+      yarn: false
     scripts:
-      # 1) instala dependencias
-      - npm ci
-
-      # 2) genera la carpeta Android de Expo
-      - npx expo prebuild --platform android --no-install
-
-      # 3) parcheos para expo-splash-screen
-      - sed -i.bak "/classifier =/d" node_modules/expo-splash-screen/android/build.gradle
-      - sed -i.bak "/artifact(androidSourcesJar)/d" node_modules/expo-splash-screen/android/build.gradle.kts
-
-      # 4) fija SDKs y JVM target
-      - echo "android.compileSdkVersion=33" >> android/gradle.properties
-      - echo "android.targetSdkVersion=33" >> android/gradle.properties
-      - echo "android.minSdkVersion=24" >> android/gradle.properties
-      - echo "kotlin.compiler.jvmTarget=17" >> android/gradle.properties
-
-      # 5) compila el APK release
-      - cd android && ./gradlew assembleRelease
-
+      - name: Install dependencies
+        script: npm install
+      - name: Install Expo CLI
+        script: npm install -g expo-cli
+      - name: Build APK (Debug)
+        script: expo build:android -t apk --non-interactive
     artifacts:
-      - android/app/build/outputs/apk/release/app-release.apk
+      - build/**/*.apk
+    cache:
+      cache_paths:
+        - node_modules
