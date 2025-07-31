@@ -14,8 +14,10 @@
 
     "patch:splash": "sed -i.bak \"/classifier =/d\" node_modules/expo-splash-screen/android/build.gradle && ( [ -f node_modules/expo-splash-screen/android/build.gradle.kts ] && sed -i.bak \"/artifact(androidSourcesJar)/d\" node_modules/expo-splash-screen/android/build.gradle.kts || true )",
 
+    // Aquí cambiamos el objetivo de Kotlin a 11
     "gradle:props": "echo \"android.compileSdkVersion=33\"  >> android/gradle.properties && echo \"android.targetSdkVersion=33\" >> android/gradle.properties && echo \"android.minSdkVersion=24\" >> android/gradle.properties && echo \"kotlin.compiler.jvmTarget=11\" >> android/gradle.properties",
 
+    // Aquí cambiamos sourceCompatibility/targetCompatibility y jvmTarget a 11
     "patch:jvm": "if grep -q 'compileOptions' android/app/build.gradle; then echo 'compileOptions already configured'; else perl -0777 -i.bak -pe 's/android {\\n/android {\\n    compileOptions {\\n        sourceCompatibility JavaVersion.VERSION_11\\n        targetCompatibility JavaVersion.VERSION_11\\n    }\\n    kotlinOptions {\\n        jvmTarget = \\\"11\\\"\\n    }\\n/' android/app/build.gradle; fi",
 
     "build:android": "npm run prebuild:android && npm run patch:splash && npm run gradle:props && npm run patch:jvm && cd android && ./gradlew assembleRelease",
