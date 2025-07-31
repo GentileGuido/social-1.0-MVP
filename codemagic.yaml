@@ -7,8 +7,32 @@ workflows:
       vars:
         EXPO_USE_DEV_CLIENT: false
     scripts:
+      # 1) Instala dependencias JS
       - npm install
+
+      # 2) Genera archivos nativos Android sin reinstalar nada
       - npx expo prebuild --platform android --no-install
+
+      # 3) Parchea el build.gradle de expo-splash-screen (cambia 'classifier' por la nueva API)
+      - |
+        sed -i '' \
+          "s/classifier = 'sources'/archiveClassifier.set('sources')/" \
+          node_modules/expo-splash-screen/android/build.gradle
+
+      # 4) Inyecta compileSdkVersion en el build.gradle de expo (soluciona el error de SDK no especificado)
+      - |
+        sed -i '' '/android {/a\
+          compileSdkVersion rootProject.ext.compileSdkVersion
+        ' node_modules/expo/android/build.gradle
+
+      # 5) Define propiedades SDK/buildTools en gradle.properties
+      - |
+        echo "compileSdkVersion=33"        >> android/gradle.properties
+        echo "targetSdkVersion=33"         >> android/gradle.properties
+        echo "buildToolsVersion=33.0.0"     >> android/gradle.properties
+
+      # 6) Compila el APK de release
       - cd android && ./gradlew assembleRelease
+
     artifacts:
       - android/app/build/outputs/**/*.apk
