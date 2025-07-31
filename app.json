@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "Social 02",
+    "slug": "social-02",
+    "version": "1.0.0",
+    "sdkVersion": "53.0.0",
+    "platforms": ["ios", "android", "web"],
+    "splash": {
+      "image": "./assets/Social_SplashScreen_Asset-02-02.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
