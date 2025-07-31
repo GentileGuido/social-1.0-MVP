@@ -11,8 +11,8 @@
     "web": "expo start --web",
     "prebuild:android": "npx expo prebuild --platform android --no-install",
     "patch:splash": "sed -i.bak \"/classifier =/d\" node_modules/expo-splash-screen/android/build.gradle && ( [ -f node_modules/expo-splash-screen/android/build.gradle.kts ] && sed -i.bak \"/artifact(androidSourcesJar)/d\" node_modules/expo-splash-screen/android/build.gradle.kts || true )",
-    "gradle:props": "echo \"android.compileSdkVersion=33\"  >> android/gradle.properties && echo \"android.targetSdkVersion=33\" >> android/gradle.properties && echo \"android.minSdkVersion=24\" >> android/gradle.properties && echo \"kotlin.compiler.jvmTarget=11\" >> android/gradle.properties",
-    "patch:jvm": "if grep -q 'compileOptions' android/app/build.gradle; then echo 'compileOptions already configured'; else perl -0777 -i.bak -pe 's/android {\\n/android {\\n    compileOptions {\\n        sourceCompatibility JavaVersion.VERSION_11\\n        targetCompatibility JavaVersion.VERSION_11\\n    }\\n    kotlinOptions {\\n        jvmTarget = \\\"11\\\"\\n    }\\n/' android/app/build.gradle; fi",
+    "gradle:props": "echo \"android.compileSdkVersion=33\"  >> android/gradle.properties && echo \"android.targetSdkVersion=33\" >> android/gradle.properties && echo \"android.minSdkVersion=24\" >> android/gradle.properties && echo \"kotlin.compiler.jvmTarget=17\" >> android/gradle.properties && echo \"kotlin.jvmToolchain=17\" >> android/gradle.properties",
+    "patch:jvm": "if grep -q 'compileOptions' android/app/build.gradle; then echo 'compileOptions already configured'; else perl -0777 -i.bak -pe 's/android {\\n/android {\\n    compileOptions {\\n        sourceCompatibility JavaVersion.VERSION_17\\n        targetCompatibility JavaVersion.VERSION_17\\n    }\\n    kotlinOptions {\\n        jvmTarget = \\\"17\\\"\\n    }\\n/' android/app/build.gradle; fi",
     "build:android": "npm run prebuild:android && npm run patch:splash && npm run gradle:props && npm run patch:jvm && cd android && ./gradlew assembleRelease",
     "codemagic:android": "npm install && npm run build:android"
   },
