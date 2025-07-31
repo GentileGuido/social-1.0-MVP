@@ -1,47 +1,34 @@
 workflows:
   android-release:
-    # Nombre amigable en la UI de Codemagic
-    name: Build Android Release
-
-    # Entorno: Node 18, no usamos Flutter aquí
+    name: Build Android Release (Expo)
     environment:
-      node: 18
-      flutter: none
-
-      # Caché para acelerar builds sucesivas
-      cache:
-        npm: true
-        cocoapods: true
-
-    # Variables de entorno (opcional, encriptadas desde Settings → Environment variables)
-    # env:
-    #   CODEMAGIC_API_TOKEN: Encrypted("…")
-
+      node: "18"           # versión de Node.js
+      flutter: none        # no usamos Flutter nativo
+    cache:
+      npm: true            # cache de dependencias npm
     scripts:
-      # 1. Instala las dependencias con lockfile
-      - npm install
+      # 1) instala dependencias
+      - npm ci
 
-      # 2. Genera proyecto Android native (Expo prebuild)
+      # 2) genera carpetas nativas Android con Expo Prebuild
       - npx expo prebuild --platform android --no-install
 
-      # 3. Parches mínimos para expo-splash-screen (solventar warnings/errores en Android Gradle)
+      # 3) parchea splash-screen (evita errores gradle)
       - sed -i.bak "/classifier =/d" node_modules/expo-splash-screen/android/build.gradle
       - sed -i.bak "/artifact(androidSourcesJar)/d" node_modules/expo-splash-screen/android/build.gradle.kts
 
-      # 4. Forzamos versiones de SDK en gradle.properties
-      - echo "android.compileSdkVersion=33"  >> android/gradle.properties
-      - echo "android.targetSdkVersion=33"   >> android/gradle.properties
-      - echo "android.minSdkVersion=24"      >> android/gradle.properties
-      - echo "kotlin.compiler.jvmTarget=17"  >> android/gradle.properties
+      # 4) fija compileSdk, targetSdk, minSdk y jvmTarget
+      - echo "android.compileSdkVersion=33" >> android/gradle.properties
+      - echo "android.targetSdkVersion=33" >> android/gradle.properties
+      - echo "android.minSdkVersion=24" >> android/gradle.properties
+      - echo "kotlin.compiler.jvmTarget=17" >> android/gradle.properties
 
-      # 5. Compila el APK en modo Release
+      # 5) compila el APK Release
       - cd android && ./gradlew assembleRelease
 
-    # Ruta donde Codemagic debe buscar el APK resultante
     artifacts:
       - android/app/build/outputs/apk/release/app-release.apk
 
-    # Se lanza la build automáticamente al pushear a main
     triggers:
       push:
         branches:
