@@ -2,34 +2,27 @@ workflows:
   android-release:
     name: Build Android Release (Expo)
     environment:
-      node: "18"           # versión de Node.js
-      flutter: none        # no usamos Flutter nativo
-    cache:
-      npm: true            # cache de dependencias npm
+      node: "18"           # usa Node.js 18
+      flutter: none        # no hace falta Flutter nativo
     scripts:
       # 1) instala dependencias
       - npm ci
 
-      # 2) genera carpetas nativas Android con Expo Prebuild
+      # 2) genera la carpeta Android de Expo
       - npx expo prebuild --platform android --no-install
 
-      # 3) parchea splash-screen (evita errores gradle)
+      # 3) parcheos para expo-splash-screen
       - sed -i.bak "/classifier =/d" node_modules/expo-splash-screen/android/build.gradle
       - sed -i.bak "/artifact(androidSourcesJar)/d" node_modules/expo-splash-screen/android/build.gradle.kts
 
-      # 4) fija compileSdk, targetSdk, minSdk y jvmTarget
+      # 4) fija SDKs y JVM target
       - echo "android.compileSdkVersion=33" >> android/gradle.properties
       - echo "android.targetSdkVersion=33" >> android/gradle.properties
       - echo "android.minSdkVersion=24" >> android/gradle.properties
       - echo "kotlin.compiler.jvmTarget=17" >> android/gradle.properties
 
-      # 5) compila el APK Release
+      # 5) compila el APK release
       - cd android && ./gradlew assembleRelease
 
     artifacts:
       - android/app/build/outputs/apk/release/app-release.apk
-
-    triggers:
-      push:
-        branches:
-          - main
