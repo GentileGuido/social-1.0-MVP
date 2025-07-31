@@ -2,18 +2,14 @@ workflows:
   debug-apk:
     name: Build APK (Debug)
     environment:
-      vars:
-        EXPO_DEBUG: 'true'
       node: 20.9.0
+      java: 17
     scripts:
-      - name: Install dependencies
-        script: npm install
-      - name: Install Expo CLI
-        script: npm install -g expo-cli
-      - name: Build APK (Debug)
-        script: expo build:android -t apk --non-interactive
+     - name: Build Android APK
+        script: npm run codemagic:android
     artifacts:
-      - build/**/*.apk
+      - android/app/build/outputs/**/*.apk
     cache:
       cache_paths:
         - node_modules
+        - android/.gradle
