@@ -1,13 +1,32 @@
 workflows:
   android-release:
-    name: Android Release
+    name: Android Release (Expo)
     environment:
-      flutter: stable
+      # Deshabilita Flutter, activa Node.js
+      flutter: none
+      node: stable
+
     scripts:
-      - echo "🛠️  Compilando APK de Android…"
-      - flutter build apk --release
+      # 1. Instala dependencias JS
+      - npm ci
+
+      # 2. Genera proyecto Android nativo
+      - npx expo prebuild --platform android --no-install
+
+      # 3. Aplica tweaks que tenías en CLI
+      - sed -i.bak "/classifier =/d" node_modules/expo-splash-screen/android/build.gradle
+      - sed -i.bak "/artifact(androidSourcesJar)/d" node_modules/expo-splash-screen/android/build.gradle.kts
+      - echo "android.compileSdkVersion=33" >> android/gradle.properties
+      - echo "android.targetSdkVersion=33"  >> android/gradle.properties
+      - echo "android.minSdkVersion=24"     >> android/gradle.properties
+      - echo "kotlin.compiler.jvmTarget=17" >> android/gradle.properties
+
+      # 4. Entra en la carpeta android y compila release
+      - cd android && ./gradlew assembleRelease
+
     artifacts:
-      - build/app/outputs/flutter-apk/app-release.apk
+      # Ruta al APK generado
+      - android/app/build/outputs/apk/release/app-release.apk
 
 triggers:
   push:
