@@ -7,22 +7,19 @@ workflows:
       vars:
         EXPO_USE_DEV_CLIENT: false
     scripts:
-      # 1. Instala dependencias de JS
+      # 1. Instala dependencias
       - npm install
 
-      # 2. Genera la carpeta android sin instalar de nuevo
+      # 2. Genera el proyecto nativo Android (prebuild) sin reinstalar en android/
       - npx expo prebuild --platform android --no-install
 
-      # 3. Parchea android/build.gradle para forzar Kotlin jvmTarget = 17
-      - sed -i '' '/android {/a\
-          \ \ \ \ kotlinOptions { jvmTarget = "17" }' android/build.gradle
+      # 3. Fija kotlinOptions.jvmTarget a 17 inyectándolo en gradle.properties del proyecto Android
+      #    Esto evita el error de incompatibilidad JVM 11 vs 17
+      - echo 'kotlin.compiler.jvmTarget=17' >> android/gradle.properties
 
-      # 4. Opcional: configura el toolchain Java 17 en Kotlin DSL
-      - sed -i '' '/plugins {/a\
-          \kotlin { jvmToolchain(17) }' android/build.gradle
-
-      # 5. Ensambla el APK en release
+      # 4. Compila el APK
       - cd android && ./gradlew assembleRelease
 
     artifacts:
+      # Este patrón recoge cualquier APK generado en outputs/
       - android/app/build/outputs/**/*.apk
