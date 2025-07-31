@@ -4,8 +4,8 @@ workflows:
     name: Build APK (Debug)
     # Versiones de Node y Java usadas en la VM
     environment:
-      node: 20.9.0
-      java: 17
+    node: 20.9.0
+    java: 11 
     # Secuencia de pasos a ejecutar
     scripts:
       # Instalar dependencias; no usamos npm ci porque el repositorio no tiene package-lock.json:contentReference[oaicite:1]{index=1}
