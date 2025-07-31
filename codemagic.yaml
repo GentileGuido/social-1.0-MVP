@@ -1,31 +1,30 @@
 workflows:
   android-release:
-    name: Android Release (Expo)
+    name: Build Android (Expo)
     environment:
-      # Deshabilita Flutter, activa Node.js
-      flutter: none
-      node: stable
+      # Sólo pide Node.js 18, deja que Codemagic instale Flutter por defecto (no lo vamos a usar explícitamente)
+      node: 18
 
     scripts:
-      # 1. Instala dependencias JS
+      # 1) instala dependencias JS
       - npm ci
 
-      # 2. Genera proyecto Android nativo
+      # 2) genera el proyecto Android nativo de Expo sin instalar nada extra
       - npx expo prebuild --platform android --no-install
 
-      # 3. Aplica tweaks que tenías en CLI
+      # 3) aplica tus sed/tweaks a gradle.properties
       - sed -i.bak "/classifier =/d" node_modules/expo-splash-screen/android/build.gradle
       - sed -i.bak "/artifact(androidSourcesJar)/d" node_modules/expo-splash-screen/android/build.gradle.kts
-      - echo "android.compileSdkVersion=33" >> android/gradle.properties
-      - echo "android.targetSdkVersion=33"  >> android/gradle.properties
-      - echo "android.minSdkVersion=24"     >> android/gradle.properties
-      - echo "kotlin.compiler.jvmTarget=17" >> android/gradle.properties
+      - echo "android.compileSdkVersion=33"  >> android/gradle.properties
+      - echo "android.targetSdkVersion=33"   >> android/gradle.properties
+      - echo "android.minSdkVersion=24"      >> android/gradle.properties
+      - echo "kotlin.compiler.jvmTarget=17"  >> android/gradle.properties
 
-      # 4. Entra en la carpeta android y compila release
+      # 4) compila el release con Gradle
       - cd android && ./gradlew assembleRelease
 
     artifacts:
-      # Ruta al APK generado
+      # Asegúrate que coincide con la salida de assembleRelease
       - android/app/build/outputs/apk/release/app-release.apk
 
 triggers:
