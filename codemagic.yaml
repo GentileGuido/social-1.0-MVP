@@ -7,31 +7,21 @@ workflows:
       vars:
         EXPO_USE_DEV_CLIENT: false
     scripts:
-      # 1) Instala dependencias JS
+      # 1. Instala dependencias de JS
       - npm install
 
-      # 2) Genera archivos nativos Android sin reinstalar nada
+      # 2. Genera la carpeta android sin instalar de nuevo
       - npx expo prebuild --platform android --no-install
 
-      # 3) Parchea el build.gradle de expo-splash-screen (cambia 'classifier' por la nueva API)
-      - |
-        sed -i '' \
-          "s/classifier = 'sources'/archiveClassifier.set('sources')/" \
-          node_modules/expo-splash-screen/android/build.gradle
+      # 3. Parchea android/build.gradle para forzar Kotlin jvmTarget = 17
+      - sed -i '' '/android {/a\
+          \ \ \ \ kotlinOptions { jvmTarget = "17" }' android/build.gradle
 
-      # 4) Inyecta compileSdkVersion en el build.gradle de expo (soluciona el error de SDK no especificado)
-      - |
-        sed -i '' '/android {/a\
-          compileSdkVersion rootProject.ext.compileSdkVersion
-        ' node_modules/expo/android/build.gradle
+      # 4. Opcional: configura el toolchain Java 17 en Kotlin DSL
+      - sed -i '' '/plugins {/a\
+          \kotlin { jvmToolchain(17) }' android/build.gradle
 
-      # 5) Define propiedades SDK/buildTools en gradle.properties
-      - |
-        echo "compileSdkVersion=33"        >> android/gradle.properties
-        echo "targetSdkVersion=33"         >> android/gradle.properties
-        echo "buildToolsVersion=33.0.0"     >> android/gradle.properties
-
-      # 6) Compila el APK de release
+      # 5. Ensambla el APK en release
       - cd android && ./gradlew assembleRelease
 
     artifacts:
