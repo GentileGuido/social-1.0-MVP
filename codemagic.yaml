@@ -1,28 +1,25 @@
 workflows:
   debug-apk:
-    # Nombre legible en Codemagic
     name: Build APK (Debug)
-    # Versiones de Node y Java usadas en la VM
     environment:
-    node: 20.9.0
-    java: 11 
-    # Secuencia de pasos a ejecutar
+      # Versión de Node y Java que usará Codemagic
+      node: 20.9.0
+      java: 11
     scripts:
-      # Instalar dependencias; no usamos npm ci porque el repositorio no tiene package-lock.json:contentReference[oaicite:1]{index=1}
+      # Instala las dependencias
       - name: Install dependencies
         script: |
           npm install
 
-      # Construir el APK (prebuild de Expo, parches y gradle assembleRelease)
+      # Ejecuta el prebuild de Expo y compila el APK
       - name: Build Android APK
         script: |
           npm run build:android
 
-    # Recoger los APK generados
     artifacts:
+      # Recoge los APK generados
       - android/app/build/outputs/**/*.apk
 
-    # Cachear node_modules y las descargas de Gradle
     cache:
       cache_paths:
         - node_modules
