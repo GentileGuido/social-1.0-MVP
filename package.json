@@ -15,7 +15,7 @@
     "gradle:props": "echo \"android.compileSdkVersion=33\"  >> android/gradle.properties && echo \"android.targetSdkVersion=33\" >> android/gradle.properties && echo \"android.minSdkVersion=24\" >> android/gradle.properties && echo \"kotlin.compiler.jvmTarget=17\" >> android/gradle.properties",
     "build:android": "npm run prebuild:android && npm run patch:splash && npm run gradle:props && cd android && ./gradlew assembleRelease",
 
-    "codemagic:android": "npm ci && npm run build:android"
+    "codemagic:android": "npm install && npm run build:android"
   },
   "dependencies": {
     "expo": "~53.0.20",
