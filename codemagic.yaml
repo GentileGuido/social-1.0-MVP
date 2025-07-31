@@ -1,0 +1,14 @@
+workflows:
+  build-android:
+    name: Build Android APK
+    max_build_duration: 60
+    environment:
+      node: 18.16.0
+      vars:
+        EXPO_USE_DEV_CLIENT: false
+    scripts:
+      - npm ci
+      - npx expo prebuild --platform android --no-install
+      - cd android && ./gradlew assembleRelease
+    artifacts:
+      - android/app/build/outputs/**/*.apk
