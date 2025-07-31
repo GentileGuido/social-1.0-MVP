@@ -1,43 +1,13 @@
-name: Android Release
-
-on:
-  push:
-    branches: [ main ]
-    # opcional: ignora cambios solo en el yml para no ciclar
-    paths-ignore:
-      - '.github/workflows/tu-workflow.yml'
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v3
-
-    - uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-    - run: yarn install
-
-    - run: npx expo prebuild --platform android --no-install
-
-    - name: Patch expo-splash-screen
-      run: |
-        sed -i.bak "/classifier =/d" node_modules/expo-splash-screen/android/build.gradle
-        sed -i.bak "/artifact(androidSourcesJar)/d" node_modules/expo-splash-screen/android/build.gradle
-
-    - name: Set Android SDK versions
-      run: |
-        echo "android.compileSdkVersion=33" >> android/gradle.properties
-        echo "android.targetSdkVersion=33"  >> android/gradle.properties
-        echo "android.minSdkVersion=24"     >> android/gradle.properties
-        echo "kotlin.compiler.jvmTarget=17" >> android/gradle.properties
-
-    - name: Build Release APK
-      working-directory: android
-      run: ./gradlew assembleRelease
-
-    - uses: actions/upload-artifact@v3
-      with:
-        name: app-release
-        path: android/app/build/outputs/**/*.apk
+workflows:
+  android-release:
+    name: Android Release
+    triggers:
+      - push:
+          branches: [ main ]
+    scripts:
+      - name: Prebuild
+        script: npx expo prebuild --platform android --no-install
+      - name: Assemble release
+        script: cd android && ./gradlew assembleRelease
+    artifacts:
+      - android/app/build/outputs/**/*.apk
