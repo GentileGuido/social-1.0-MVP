@@ -1,33 +1,48 @@
 workflows:
   android-release:
-    name: Build Android (Expo)
+    # Nombre amigable en la UI de Codemagic
+    name: Build Android Release
+
+    # Entorno: Node 18, no usamos Flutter aquí
     environment:
-      # Sólo pide Node.js 18, deja que Codemagic instale Flutter por defecto (no lo vamos a usar explícitamente)
       node: 18
+      flutter: none
+
+      # Caché para acelerar builds sucesivas
+      cache:
+        npm: true
+        cocoapods: true
+
+    # Variables de entorno (opcional, encriptadas desde Settings → Environment variables)
+    # env:
+    #   CODEMAGIC_API_TOKEN: Encrypted("…")
 
     scripts:
-      # 1) instala dependencias JS
-      - npm ci
+      # 1. Instala las dependencias con lockfile
+      - npm install
 
-      # 2) genera el proyecto Android nativo de Expo sin instalar nada extra
+      # 2. Genera proyecto Android native (Expo prebuild)
       - npx expo prebuild --platform android --no-install
 
-      # 3) aplica tus sed/tweaks a gradle.properties
+      # 3. Parches mínimos para expo-splash-screen (solventar warnings/errores en Android Gradle)
       - sed -i.bak "/classifier =/d" node_modules/expo-splash-screen/android/build.gradle
       - sed -i.bak "/artifact(androidSourcesJar)/d" node_modules/expo-splash-screen/android/build.gradle.kts
+
+      # 4. Forzamos versiones de SDK en gradle.properties
       - echo "android.compileSdkVersion=33"  >> android/gradle.properties
       - echo "android.targetSdkVersion=33"   >> android/gradle.properties
       - echo "android.minSdkVersion=24"      >> android/gradle.properties
       - echo "kotlin.compiler.jvmTarget=17"  >> android/gradle.properties
 
-      # 4) compila el release con Gradle
+      # 5. Compila el APK en modo Release
       - cd android && ./gradlew assembleRelease
 
+    # Ruta donde Codemagic debe buscar el APK resultante
     artifacts:
-      # Asegúrate que coincide con la salida de assembleRelease
       - android/app/build/outputs/apk/release/app-release.apk
 
-triggers:
-  push:
-    branches:
-      - main
+    # Se lanza la build automáticamente al pushear a main
+    triggers:
+      push:
+        branches:
+          - main
