@@ -10,13 +10,11 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
 
-    // --- pasos para build Android ---
     "prebuild:android": "npx expo prebuild --platform android --no-install",
     "patch:splash": "sed -i.bak \"/classifier =/d\" node_modules/expo-splash-screen/android/build.gradle && sed -i.bak \"/artifact(androidSourcesJar)/d\" node_modules/expo-splash-screen/android/build.gradle.kts",
     "gradle:props": "echo \"android.compileSdkVersion=33\"  >> android/gradle.properties && echo \"android.targetSdkVersion=33\" >> android/gradle.properties && echo \"android.minSdkVersion=24\" >> android/gradle.properties && echo \"kotlin.compiler.jvmTarget=17\" >> android/gradle.properties",
     "build:android": "npm run prebuild:android && npm run patch:splash && npm run gradle:props && cd android && ./gradlew assembleRelease",
-    
-    // script comodín para Codemagic
+
     "codemagic:android": "npm ci && npm run build:android"
   },
   "dependencies": {
@@ -42,6 +40,6 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
-    "expo-cli": "^7.0.0"
+    "expo-cli": "^6.3.10"
   }
 }
