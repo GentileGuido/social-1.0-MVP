@@ -7,25 +7,21 @@ workflows:
       vars:
         EXPO_USE_DEV_CLIENT: false
     scripts:
-      # 1) Instalamos deps
       - npm install
-      
-      # 2) Prebuild con Expo (crea las carpetas android/ e ios/)
       - npx expo prebuild --platform android --no-install
 
-      # 3) PATCH #1: eliminamos la línea "classifier = 'sources'" que falla
+      # eliminar classifier de splash-screen
       - sed -i.bak "/classifier =/d" node_modules/expo-splash-screen/android/build.gradle
       - sed -i.bak "/artifact(androidSourcesJar)/d" node_modules/expo-splash-screen/android/build.gradle
 
-      # 4) PATCH #2: forzamos un compileSdkVersion en gradle.properties
+      # forzar versiones de SDK
       - echo "android.compileSdkVersion=33" >> android/gradle.properties
       - echo "android.targetSdkVersion=33"  >> android/gradle.properties
-      - echo "android.minSdkVersion=21"     >> android/gradle.properties
+      - echo "android.minSdkVersion=24"     >> android/gradle.properties
 
-      # 5) PATCH #3: Kotlin jvmTarget = 17
+      # Kotlin jvmTarget = 17
       - echo "kotlin.compiler.jvmTarget=17" >> android/gradle.properties
 
-      # 6) Finalmente compilamos el release
       - cd android && ./gradlew assembleRelease
 
     artifacts:
