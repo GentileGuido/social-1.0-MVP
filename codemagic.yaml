@@ -5,8 +5,12 @@ workflows:
       node: 20.9.0
       java: 17
     scripts:
-     - name: Build Android APK
-        script: npm run codemagic:android
+      - name: Install dependencies
+        script: |
+          npm install  # genera package-lock.json para que npm no falle:contentReference[oaicite:2]{index=2}
+      - name: Build Android APK
+        script: |
+          npm run build:android  # ejecuta prebuild de Expo y assembleRelease
     artifacts:
       - android/app/build/outputs/**/*.apk
     cache:
