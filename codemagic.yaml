@@ -1,28 +1,43 @@
-workflows:
-  build-android:
-    name: Build Android APK
-    max_build_duration: 60
-    environment:
-      node: 18.16.0
-      vars:
-        EXPO_USE_DEV_CLIENT: false
-    scripts:
-      - npm install
-      - npx expo prebuild --platform android --no-install
+name: Android Release
 
-      # eliminar classifier de splash-screen
-      - sed -i.bak "/classifier =/d" node_modules/expo-splash-screen/android/build.gradle
-      - sed -i.bak "/artifact(androidSourcesJar)/d" node_modules/expo-splash-screen/android/build.gradle
+on:
+  push:
+    branches: [ main ]
+    # opcional: ignora cambios solo en el yml para no ciclar
+    paths-ignore:
+      - '.github/workflows/tu-workflow.yml'
 
-      # forzar versiones de SDK
-      - echo "android.compileSdkVersion=33" >> android/gradle.properties
-      - echo "android.targetSdkVersion=33"  >> android/gradle.properties
-      - echo "android.minSdkVersion=24"     >> android/gradle.properties
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-      # Kotlin jvmTarget = 17
-      - echo "kotlin.compiler.jvmTarget=17" >> android/gradle.properties
+    steps:
+    - uses: actions/checkout@v3
 
-      - cd android && ./gradlew assembleRelease
+    - uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    - run: yarn install
 
-    artifacts:
-      - android/app/build/outputs/**/*.apk
+    - run: npx expo prebuild --platform android --no-install
+
+    - name: Patch expo-splash-screen
+      run: |
+        sed -i.bak "/classifier =/d" node_modules/expo-splash-screen/android/build.gradle
+        sed -i.bak "/artifact(androidSourcesJar)/d" node_modules/expo-splash-screen/android/build.gradle
+
+    - name: Set Android SDK versions
+      run: |
+        echo "android.compileSdkVersion=33" >> android/gradle.properties
+        echo "android.targetSdkVersion=33"  >> android/gradle.properties
+        echo "android.minSdkVersion=24"     >> android/gradle.properties
+        echo "kotlin.compiler.jvmTarget=17" >> android/gradle.properties
+
+    - name: Build Release APK
+      working-directory: android
+      run: ./gradlew assembleRelease
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: app-release
+        path: android/app/build/outputs/**/*.apk
